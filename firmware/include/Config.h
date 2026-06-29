@@ -6,7 +6,7 @@ namespace Config {
 
 const bool ENABLE_TELEMETRY = true;
 
-// Hardware pins (XIAO RP2040)
+/* Hardware pins (XIAO RP2040)
 const int PIN_RIGHT_BTN = D0;
 const int PIN_LEFT_BTN = D2;
 const int PIN_LED_DATA = D3;
@@ -14,6 +14,16 @@ const int PIN_LED_LS = D1;
 const int PIN_MAG1_LS = D10;
 const int PIN_MAG2_LS = D9;
 const int PIN_MAG3_LS = D8;
+*/
+
+// Hardware pins (Adafruit QT Py ESP32-S3)
+const int PIN_RIGHT_BTN = 18;   // D0;
+const int PIN_LEFT_BTN =  9;    // D2;
+const int PIN_LED_DATA =  8;    // D3;
+const int PIN_LED_LS =    17;   // D1;
+const int PIN_MAG1_LS =   35;   // D10;
+const int PIN_MAG2_LS =   37;   // D9;
+const int PIN_MAG3_LS =   36;   // D8;
 
 // Samples for calibration offset
 const int ZERO_SAMPLES = 200;
