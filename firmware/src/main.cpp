@@ -12,6 +12,10 @@ HIDController hidController;
 TelemetryController telemetryController;
 
 void setup() {
+  TinyUSBDevice.setID(0x256F, 0xC635);
+  TinyUSBDevice.setManufacturerDescriptor("3Dconnexion");
+  TinyUSBDevice.setProductDescriptor("SpaceMouse Compact");
+
   // Initialize USB HID first
   hidController.begin();
 
@@ -30,6 +34,6 @@ void setup() {
 }
 
 void loop() {
-  hidController.task();
+  // hidController.task(); // Not required on an ESP32
   stateMachine.update();
 }
