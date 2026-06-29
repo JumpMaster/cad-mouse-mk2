@@ -76,6 +76,33 @@ void LEDController::updateSpinner() {
   }
 }
 
+void LEDController::startBlink(unsigned long color, unsigned long halfPeriodMs) {
+  mode_ = Mode::Blink;
+  color_ = toNeoColor(color);
+  blinkHalfPeriodMs_ = halfPeriodMs;
+  blinkOn_ = true;
+  lastBlinkMs_ = millis();
+  setPower(true);
+  fillAll(color_);
+  ring_.show();
+}
+
+void LEDController::updateBlink() {
+  if (mode_ != Mode::Blink) {
+    return;
+  }
+
+  const unsigned long now = millis();
+  if ((now - lastBlinkMs_) < blinkHalfPeriodMs_) {
+    return;
+  }
+  lastBlinkMs_ = now;
+
+  blinkOn_ = !blinkOn_;
+  fillAll(blinkOn_ ? color_ : 0);
+  ring_.show();
+}
+
 void LEDController::off() {
   mode_ = Mode::Off;
   fillAll(0);

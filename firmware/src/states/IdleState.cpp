@@ -9,7 +9,9 @@
 void IdleState::enter() {
   lastUpdateMs_ = 0;
   lastActivityMs_ = millis();
-  ledController.setSolid(Config::LED_IDLE_COLOR);
+  // Force updateTransport() to (re)assert the correct colour on the first loop.
+  ledShown_ = TransportLed::None;
+  bleWasConnected_ = bleHidController.connected();
 }
 
 bool IdleState::handleCalibrationRequest() {
@@ -18,6 +20,53 @@ bool IdleState::handleCalibrationRequest() {
     return true;
   }
   return false;
+}
+
+// Picks a single active transport (BLE wins over USB) and reflects it on the
+// LED ring. When BLE connects we tell the USB host to disconnect; when it drops
+// we re-attach USB so the wired connection comes back if a cable is present.
+void IdleState::updateTransport(unsigned long /*now*/) {
+  const bool ble = bleHidController.connected();
+
+  if (ble != bleWasConnected_) {
+    bleWasConnected_ = ble;
+    if (ble) {
+      hidController.detach();  // BLE takes over -> USB host sees an unplug
+    } else {
+      hidController.attach();  // BLE gone -> re-enumerate over USB if wired
+    }
+  }
+
+  TransportLed desired;
+  if (ble) {
+    desired = TransportLed::Ble;
+  } else if (hidController.mounted()) {
+    desired = TransportLed::Usb;
+  } else if (Config::ENABLE_BLE) {
+    desired = TransportLed::Waiting;  // on battery, advertising, not connected
+  } else {
+    desired = TransportLed::Usb;  // USB-only build with no host yet
+  }
+
+  if (desired != ledShown_) {
+    ledShown_ = desired;
+    switch (desired) {
+      case TransportLed::Ble:
+        ledController.setSolid(Config::LED_BLE_COLOR);
+        break;
+      case TransportLed::Usb:
+        ledController.setSolid(Config::LED_USB_COLOR);
+        break;
+      case TransportLed::Waiting:
+        ledController.startBlink(Config::LED_BLE_COLOR,
+                                 Config::LED_BLE_WAIT_BLINK_MS);
+        break;
+      case TransportLed::None:
+        break;
+    }
+  }
+
+  ledController.updateBlink();  // no-op unless the ring is in blink mode
 }
 
 void IdleState::runMotionPipeline(float dt, unsigned long now) {
@@ -32,7 +81,13 @@ void IdleState::runMotionPipeline(float dt, unsigned long now) {
   }
 
   const uint16_t buttonBits = inputController.buttonBits();
-  const bool hidReportSent = hidController.sendReports(motion, buttonBits);
+
+  // Exactly one transport is active at a time; BLE takes priority over USB.
+  const bool hidReportSent =
+      bleHidController.connected()
+          ? bleHidController.sendReports(motion, buttonBits)
+          : hidController.sendReports(motion, buttonBits);
+
   if (telemetryController.enabled()) {
     telemetryController.publish(motion, buttonBits, hidReportSent);
   }
@@ -56,6 +111,8 @@ void IdleState::update() {
   if (inputController.takeActivity()) {
     lastActivityMs_ = now;
   }
+
+  updateTransport(now);
 
   const float dt = (lastUpdateMs_ == 0) ? 0.01
                                         : ((now - lastUpdateMs_) / 1000.0);

@@ -6,6 +6,26 @@ namespace Config {
 
 const bool ENABLE_TELEMETRY = true;
 
+// ---- Transports -----------------------------------------------------------
+// The device can present over USB HID, BLE HID, or both at once. With both
+// enabled it sends reports to whichever transport is currently connected.
+// (If you only ever want one, disable the other to save flash/RAM.)
+const bool ENABLE_USB = true;
+const bool ENABLE_BLE = true;
+
+// Shared HID identity, used by both the USB descriptor and the BLE PnP record.
+const uint16_t HID_VID = 0x256F;      // 3Dconnexion
+const uint16_t HID_PID = 0xC635;      // SpaceMouse Compact
+const uint16_t HID_VERSION = 0x0111;  // bcdDevice
+
+// ---- Bluetooth LE ---------------------------------------------------------
+const char BLE_DEVICE_NAME[] = "SpaceMouse Compact";
+// Advertised/GATT battery level (0-100). Fixed for now; wire to a fuel gauge
+// later via bleHidController.setBatteryLevel().
+const uint8_t BLE_BATTERY_LEVEL = 100;
+// TX power in dBm (ESP32-S3 supports roughly -27..+9).
+const int8_t BLE_TX_POWER_DBM = 9;
+
 /* Hardware pins (XIAO RP2040)
 const int PIN_RIGHT_BTN = D0;
 const int PIN_LEFT_BTN = D2;
@@ -48,6 +68,13 @@ const int LED_COUNT = 8;
 const int LED_BRIGHTNESS = 40;
 const unsigned long LED_IDLE_COLOR = 0x00FF00;
 const unsigned long LED_CALIBRATING_COLOR = 0x0000FF;
+
+// Transport status colours.
+const unsigned long LED_USB_COLOR = 0x00FF00;  // solid green: sending over USB
+const unsigned long LED_BLE_COLOR = 0x0000FF;  // solid blue: sending over BLE
+// While on battery and advertising (BLE not yet connected) the ring blinks
+// blue at this half-period to show it is waiting for a connection.
+const unsigned long LED_BLE_WAIT_BLINK_MS = 600;
 
 // FSM timing
 const long IDLE_SLEEP_TIMEOUT_MS = 2 * 60 * 1000;

@@ -9,15 +9,19 @@ LEDController ledController;
 SensorController sensorController;
 MotionController motionController;
 HIDController hidController;
+BLEHIDController bleHidController;
 TelemetryController telemetryController;
 
 void setup() {
-  TinyUSBDevice.setID(0x256F, 0xC635);
-  TinyUSBDevice.setManufacturerDescriptor("3Dconnexion");
-  TinyUSBDevice.setProductDescriptor("SpaceMouse Compact");
+  if (Config::ENABLE_USB) {
+    TinyUSBDevice.setID(Config::HID_VID, Config::HID_PID);
+    TinyUSBDevice.setManufacturerDescriptor("3Dconnexion");
+    TinyUSBDevice.setProductDescriptor("SpaceMouse Compact");
+  }
 
-  // Initialize USB HID first
+  // Initialize USB HID first, then BLE HID.
   hidController.begin();
+  bleHidController.begin();
 
   if (Config::ENABLE_TELEMETRY) {
     Serial.begin(115200);

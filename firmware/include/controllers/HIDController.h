@@ -3,25 +3,23 @@
 #include <Adafruit_TinyUSB.h>
 #include <Arduino.h>
 
+#include "HIDReportDescriptor.h"
+
 class HIDController {
  public:
   void begin();
   void task();
   bool sendReports(const float motion[6], uint16_t buttonBits);
 
+  // USB connection control, used by the transport-routing logic so BLE can
+  // take over. detach() makes the device "unplug" from the host (power over
+  // the cable is unaffected); attach() re-enumerates if a cable is present.
+  void detach();
+  void attach();
+  bool mounted();
+
  private:
-  struct __attribute__((packed)) ReportAxes {
-    int16_t x, y, z, rx, ry, rz;
-  };
-
-  struct __attribute__((packed)) ReportButtons {
-    uint16_t bits;
-  };
-
-  static ReportAxes makeAxesReport(const float motion[6]);
-  bool axesReportChanged(const ReportAxes& axes) const;
-
   Adafruit_USBD_HID usbHid_;
   uint16_t buttonBitsSent_ = 0;
-  ReportAxes lastSentAxes_{};
+  HIDReportAxes lastSentAxes_{};
 };
