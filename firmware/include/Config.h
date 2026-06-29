@@ -26,6 +26,14 @@ const uint8_t BLE_BATTERY_LEVEL = 100;
 // TX power in dBm (ESP32-S3 supports roughly -27..+9).
 const int8_t BLE_TX_POWER_DBM = 9;
 
+// Requested connection interval, in 1.25 ms units (6 = 7.5 ms). A low, tight
+// interval gives a higher and steadier report rate -> smoother motion, at a
+// small power cost. The central may clamp or override these; the firmware
+// paces its notifications to whatever interval is actually negotiated.
+const uint16_t BLE_CONN_INTERVAL_MIN = 6;            // 7.5 ms
+const uint16_t BLE_CONN_INTERVAL_MAX = 9;            // 11.25 ms
+const uint16_t BLE_CONN_SUPERVISION_TIMEOUT = 400;   // 4 s, in 10 ms units
+
 /* Hardware pins (XIAO RP2040)
 const int PIN_RIGHT_BTN = D0;
 const int PIN_LEFT_BTN = D2;
@@ -37,13 +45,13 @@ const int PIN_MAG3_LS = D8;
 */
 
 // Hardware pins (Adafruit QT Py ESP32-S3)
-const int PIN_RIGHT_BTN = 18;   // D0;
-const int PIN_LEFT_BTN =  9;    // D2;
-const int PIN_LED_DATA =  8;    // D3;
-const int PIN_LED_LS =    17;   // D1;
-const int PIN_MAG1_LS =   35;   // D10;
-const int PIN_MAG2_LS =   37;   // D9;
-const int PIN_MAG3_LS =   36;   // D8;
+const int PIN_RIGHT_BTN = A0;   // 18;   // D0;
+const int PIN_LEFT_BTN =  A2;   // 9;    // D2;
+const int PIN_LED_DATA =  A3;   // 8;    // D3;
+const int PIN_LED_LS =    A1;   // 17;   // D1;
+const int PIN_MAG1_LS =   MOSI; // 35;   // D10;
+const int PIN_MAG2_LS =   MISO; // 37;   // D9;
+const int PIN_MAG3_LS =   SCK;  // 36;   // D8;
 
 // Samples for calibration offset
 const int ZERO_SAMPLES = 200;

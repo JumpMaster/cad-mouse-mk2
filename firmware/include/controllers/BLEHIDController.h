@@ -38,6 +38,10 @@ class BLEHIDController {
   // Forces a fresh axes+button report on the next send after a (re)connection,
   // so a newly connected host immediately gets the current state.
   volatile bool forceSend_ = false;
+  // Negotiated-interval-based pacing: at most one notification per connection
+  // event keeps the link queue shallow (low latency) and delivery even.
+  volatile uint32_t notifyIntervalMs_ = 12;
+  uint32_t lastNotifyMs_ = 0;
 
   HIDReportAxes lastSentAxes_{};
   uint16_t buttonBitsSent_ = 0;
